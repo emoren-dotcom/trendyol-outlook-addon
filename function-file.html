@@ -1,0 +1,136 @@
+# function-file.html Kodu
+
+Bu kodu kopyala, yeni dosya aç, yapıştır, `function-file.html` olarak kaydet:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Function File</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+</head>
+<body>
+    <script>
+        Office.onReady(() => {
+            console.log('TrendyOL Function File hazır!');
+        });
+
+        function onItemSend(event) {
+            console.log('Mail gönderiliyor, attachment kontrolü yapılıyor...');
+            
+            const item = Office.context.mailbox.item;
+            
+            // Attachment kontrolü
+            item.getAttachmentsAsync((result) => {
+                if (result.status === Office.AsyncResultStatus.Succeeded) {
+                    const attachments = result.value;
+                    
+                    if (attachments.length > 0) {
+                        console.log('Attachment tespit edildi:', attachments.length, 'dosya');
+                        // Attachment varsa uyarı göster
+                        showAttachmentWarning(event, attachments);
+                    } else {
+                        console.log('Attachment yok, mail gönderiliyor...');
+                        // Attachment yoksa mail'i gönder
+                        event.completed({ allowEvent: true });
+                    }
+                } else {
+                    console.log('Attachment kontrolü başarısız, mail gönderiliyor...');
+                    // Hata durumunda mail'i gönder
+                    event.completed({ allowEvent: true });
+                }
+            });
+        }
+
+        function showAttachmentWarning(event, attachments) {
+            // Attachment isimlerini listele
+            const attachmentNames = attachments.map(att => att.name).join('\n• ');
+            
+            // Toplam dosya boyutu hesapla
+            const totalSize = attachments.reduce((sum, att) => sum + att.size, 0);
+            const totalSizeKB = Math.round(totalSize / 1024);
+            
+            const warningMessage = `
+🚨 DİKKAT: DOSYA EKİ TESPİT EDİLDİ!
+
+📎 Eklenen dosya(lar):
+• ${attachmentNames}
+
+📊 Toplam boyut: ${totalSizeKB} KB
+
+⚠️ Lütfen kontrol edin:
+✓ Dosyalar doğru kişiye mi gidiyor?
+✓ Gizli/hassas bilgi içeriyor mu?
+✓ Dosya boyutu uygun mu?
+✓ Virüs taramasından geçti mi?
+
+📧 Mail'i göndermek istediğinizden emin misiniz?
+            `;
+            
+            // Kullanıcıya onay penceresi göster
+            const userChoice = confirm(warningMessage);
+            
+            if (userChoice) {
+                console.log('Kullanıcı onayladı, mail gönderiliyor...');
+                // Kullanıcı onayladıysa mail'i gönder
+                event.completed({ allowEvent: true });
+            } else {
+                console.log('Kullanıcı iptal etti, mail gönderilmiyor...');
+                // Kullanıcı iptal ettiyse mail'i gönderme
+                event.completed({ 
+                    allowEvent: false, 
+                    errorMessage: "Mail gönderimi kullanıcı tarafından iptal edildi." 
+                });
+            }
+        }
+
+        // Dosya boyutu kontrolü (isteğe bağlı)
+        function checkFileSize(attachments) {
+            const maxSizeKB = 10240; // 10MB limit
+            const totalSize = attachments.reduce((sum, att) => sum + att.size, 0);
+            const totalSizeKB = Math.round(totalSize / 1024);
+            
+            if (totalSizeKB > maxSizeKB) {
+                return {
+                    isValid: false,
+                    message: `Dosya boyutu çok büyük: ${totalSizeKB} KB (Max: ${maxSizeKB} KB)`
+                };
+            }
+            
+            return { isValid: true };
+        }
+
+        // Tehlikeli dosya türü kontrolü (isteğe bağlı)
+        function checkFileTypes(attachments) {
+            const dangerousTypes = ['.exe', '.bat', '.com', '.cmd', '.pif', '.scr', '.vbs', '.js'];
+            
+            for (let attachment of attachments) {
+                const fileName = attachment.name.toLowerCase();
+                const fileExt = fileName.substring(fileName.lastIndexOf('.'));
+                
+                if (dangerousTypes.includes(fileExt)) {
+                    return {
+                        isValid: false,
+                        message: `Tehlikeli dosya türü: ${attachment.name}`
+                    };
+                }
+            }
+            
+            return { isValid: true };
+        }
+
+        // Office'e fonksiyonu kaydet
+        if (Office.actions) {
+            Office.actions.associate("onItemSend", onItemSend);
+        }
+    </script>
+</body>
+</html>
+```
+
+**Yapılacaklar:**
+1. Bu kodu kopyala
+2. Yeni dosya aç  
+3. Yapıştır
+4. `function-file.html` olarak kaydet

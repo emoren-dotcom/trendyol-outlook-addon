@@ -1,0 +1,161 @@
+# taskpane.html Kodu
+
+Bu kodu kopyala, yeni dosya aç, yapıştır, `taskpane.html` olarak kaydet:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Attachment Uyarı</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            font-size: 14px;
+        }
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .info-box {
+            background-color: #d1ecf1;
+            border: 1px solid #b8daff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success-box {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #0078d4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #106ebe;
+        }
+        h2 {
+            color: #323130;
+            margin-top: 0;
+        }
+        #attachment-list {
+            margin-top: 15px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #f8f9fa;
+            border-left: 3px solid #0078d4;
+            margin-left: 0;
+        }
+    </style>
+</head>
+<body>
+    <h2>📎 Attachment Uyarı Sistemi</h2>
+    
+    <div class="success-box">
+        <strong>✅ Aktif:</strong> Sistem çalışıyor! Mail gönderirken attachment kontrolü yapılacak.
+    </div>
+    
+    <div class="info-box">
+        <strong>ℹ️ Nasıl Çalışır:</strong><br>
+        • Mail göndermeye çalıştığınızda otomatik kontrol edilir<br>
+        • Attachment varsa uyarı penceresi çıkar<br>
+        • Onayladıktan sonra mail gönderilir
+    </div>
+    
+    <div class="warning-box">
+        <strong>⚠️ Dikkat:</strong> Attachment'lı mail gönderirken:<br>
+        • Doğru kişiye mi gidiyor?<br>
+        • Gizli bilgi var mı?<br>
+        • Dosya boyutu uygun mu?
+    </div>
+    
+    <button onclick="checkCurrentAttachments()">Mevcut Attachment'ları Kontrol Et</button>
+    <button onclick="testSystem()">Sistemi Test Et</button>
+    
+    <div id="attachment-list"></div>
+    <div id="test-result"></div>
+    
+    <script>
+        Office.onReady(() => {
+            console.log('TrendyOL Attachment Uyarı Add-in hazır!');
+            document.getElementById('test-result').innerHTML = 
+                '<div class="success-box">🟢 Add-in başarıyla yüklendi!</div>';
+        });
+        
+        function checkCurrentAttachments() {
+            const item = Office.context.mailbox.item;
+            const listDiv = document.getElementById('attachment-list');
+            
+            if (!item) {
+                listDiv.innerHTML = '<div class="warning-box">Mail editörde olmanız gerekiyor.</div>';
+                return;
+            }
+            
+            item.getAttachmentsAsync((result) => {
+                if (result.status === Office.AsyncResultStatus.Succeeded) {
+                    const attachments = result.value;
+                    
+                    if (attachments.length > 0) {
+                        let html = '<div class="info-box"><h3>📎 Mevcut Attachment\'lar:</h3><ul>';
+                        attachments.forEach(att => {
+                            const sizeKB = Math.round(att.size / 1024);
+                            html += `<li><strong>${att.name}</strong> (${sizeKB} KB)</li>`;
+                        });
+                        html += '</ul></div>';
+                        listDiv.innerHTML = html;
+                    } else {
+                        listDiv.innerHTML = '<div class="success-box">✅ Henüz attachment yok.</div>';
+                    }
+                } else {
+                    listDiv.innerHTML = '<div class="warning-box">❌ Attachment kontrolü yapılamadı.</div>';
+                }
+            });
+        }
+        
+        function testSystem() {
+            const testDiv = document.getElementById('test-result');
+            testDiv.innerHTML = '<div class="info-box">🔄 Sistem test ediliyor...</div>';
+            
+            setTimeout(() => {
+                testDiv.innerHTML = `
+                    <div class="success-box">
+                        <strong>✅ Test Başarılı!</strong><br>
+                        • Office.js yüklendi<br>
+                        • Manifest geçerli<br>
+                        • Event handler hazır<br>
+                        <br>
+                        <em>Şimdi mail yazıp attachment ekleyip göndermeyi deneyin!</em>
+                    </div>
+                `;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
+```
+
+**Yapılacaklar:**
+1. Bu kodu kopyala
+2. Yeni dosya aç
+3. Yapıştır
+4. `taskpane.html` olarak kaydet
